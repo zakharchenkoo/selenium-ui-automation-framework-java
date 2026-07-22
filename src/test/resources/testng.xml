@@ -1,0 +1,10 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="UI Regression Suite" parallel="none">
+    <test name="Regression Tests">
+        <classes>
+            <class name="com.qaportfolio.tests.HomePageTest"/>
+            <class name="com.qaportfolio.tests.FormTest"/>
+            <class name="com.qaportfolio.tests.WebTablesTest"/>
+        </classes>
+    </test>
+</suite>
