@@ -38,6 +38,7 @@ build/
 
 allure-results/
 allure-report/
+.allure/
 
 docker/video/
 docker/logs/
