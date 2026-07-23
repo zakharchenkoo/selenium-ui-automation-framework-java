@@ -26,11 +26,7 @@ public abstract class BaseTest {
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown(ITestResult result) {
-        if (result.getStatus() == ITestResult.FAILURE) {
-            ScreenshotHelper.attachFailureArtifacts(result.getName());
-        }
-
+    public void tearDown() {
         DriverManager.quitDriver();
     }
 
