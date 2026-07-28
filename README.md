@@ -16,6 +16,7 @@ The project demonstrates a production-style test automation structure using the 
 - Owner
 - JavaFaker
 - SLF4J + Logback
+- Docker / Selenoid
 
 ## Test Coverage
 
@@ -32,6 +33,8 @@ The framework currently covers UI scenarios for DemoQA:
 - Verify submitted data in the confirmation modal
 - Upload a test file
 - Select date of birth, gender, hobbies, state and city
+- Verify form is not submitted with empty required fields
+- Verify form is not submitted with invalid mobile number
 
 ### Web Tables
 
@@ -39,6 +42,7 @@ The framework currently covers UI scenarios for DemoQA:
 - Edit an existing record
 - Delete a record
 - Search for a record by keyword
+- Add multiple records via data-driven test
 
 ## Project Structure
 
@@ -53,3 +57,27 @@ src/test/java/com/qaportfolio
 ├── steps         # Business-level test steps
 ├── tests         # Test classes
 └── utils         # Utility classes and Allure attachments
+```
+
+## Running with Selenoid (Docker)
+
+The framework can run tests against a remote Selenium Grid (Selenoid) instead of local browsers.
+
+1. Start Selenoid:
+```bash
+   cd docker
+   docker-compose up -d
+```
+2. Open Selenoid UI at `http://localhost:8080` to confirm chrome/firefox are available.
+3. Run tests in remote mode:
+```bash
+   mvn test -Drun.mode=remote -Dremote.provider=selenoid
+```
+4. Stop Selenoid when done:
+```bash
+   docker-compose down
+```
+
+## CI
+
+Every push to `main` runs the smoke suite. Every pull request additionally runs the full regression suite. See `.github/workflows/tests.yml`. Allure reports are uploaded as build artifacts.
