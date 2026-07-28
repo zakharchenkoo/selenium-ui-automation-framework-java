@@ -1,5 +1,6 @@
 package com.qaportfolio.tests;
 
+import com.qaportfolio.data.DataProviders;
 import com.qaportfolio.data.TableRecordData;
 import com.qaportfolio.data.TestDataFactory;
 import com.qaportfolio.pages.TablesPage;
@@ -83,6 +84,23 @@ public class WebTablesTest extends BaseTest {
                 .openWebTablesPage()
                 .addNewRecord(recordData)
                 .searchByKeyword(recordData.email())
+                .verifyRecordIsDisplayed(recordData);
+    }
+
+    @Test(
+            dataProvider = "tableRecords",
+            dataProviderClass = DataProviders.class,
+            groups = {"regression", "tables"},
+            description = "User should be able to add different records to the web table"
+    )
+    @Story("Add table record (data-driven)")
+    @Severity(SeverityLevel.NORMAL)
+    public void shouldAddDifferentRecordsToWebTable(TableRecordData recordData) {
+        TableSteps tableSteps = new TableSteps(new TablesPage(driver()));
+
+        tableSteps
+                .openWebTablesPage()
+                .addNewRecord(recordData)
                 .verifyRecordIsDisplayed(recordData);
     }
 }

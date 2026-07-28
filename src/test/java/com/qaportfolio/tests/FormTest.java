@@ -31,4 +31,31 @@ public class FormTest extends BaseTest {
                 .verifySubmissionModalIsDisplayed()
                 .verifySubmittedStudentData(studentData);
     }
+
+    @Test(groups = {"regression", "negative"}, description = "Form should not be submitted when all fields are empty")
+    @Story("Negative: empty required fields")
+    @Severity(SeverityLevel.NORMAL)
+    public void shouldNotSubmitFormWithEmptyRequiredFields() {
+        FormPage formPage = new FormPage(driver());
+        FormSteps formSteps = new FormSteps(formPage);
+
+        formSteps
+                .openStudentRegistrationForm()
+                .submitForm()
+                .verifySubmissionModalIsNotDisplayed();
+    }
+
+    @Test(groups = {"regression", "negative"}, description = "Form should not be submitted with invalid mobile number")
+    @Story("Negative: invalid mobile number")
+    @Severity(SeverityLevel.NORMAL)
+    public void shouldNotSubmitFormWithInvalidMobileNumber() {
+        FormPage formPage = new FormPage(driver());
+        FormSteps formSteps = new FormSteps(formPage);
+
+        formSteps
+                .openStudentRegistrationForm()
+                .fillRequiredFieldsOnly("John", "Doe", "123")
+                .submitForm()
+                .verifySubmissionModalIsNotDisplayed();
+    }
 }

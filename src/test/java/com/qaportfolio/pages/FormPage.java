@@ -55,6 +55,13 @@ public class FormPage extends BasePage {
         return this;
     }
 
+    public FormPage fillRequiredFieldsOnly(String firstName, String lastName, String mobileNumber) {
+        waitAndType(firstNameInput, firstName);
+        waitAndType(lastNameInput, lastName);
+        waitAndType(mobileInput, mobileNumber);
+        return this;
+    }
+
     public FormPage submit() {
         waitAndClick(submitButton);
         return this;
