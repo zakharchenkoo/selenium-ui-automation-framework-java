@@ -4,6 +4,7 @@ import com.qaportfolio.config.AppConfig;
 import com.qaportfolio.driver.DriverFactory;
 import com.qaportfolio.driver.DriverManager;
 import com.qaportfolio.utils.ScreenshotHelper;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
@@ -21,7 +22,7 @@ public abstract class BaseTest {
         DriverManager.setDriver(driver);
 
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(config.implicitWait()));
-        driver.manage().window().maximize();
+        driver.manage().window().setSize(new Dimension(1920, 1080));
         driver.get(config.baseUrl());
     }
 

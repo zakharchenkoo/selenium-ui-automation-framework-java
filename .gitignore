@@ -3,6 +3,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 .kotlin
+.idea/
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
@@ -40,8 +41,10 @@ allure-results/
 allure-report/
 .allure/
 
-docker/video/
-docker/logs/
+docker/video/*
+docker/logs/*
+!docker/logs/.gitkeep
+!docker/video/.gitkeep
 
 ### Mac OS ###
 .DS_Store

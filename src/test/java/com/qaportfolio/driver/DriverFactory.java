@@ -4,12 +4,17 @@ import com.qaportfolio.config.AppConfig;
 import com.qaportfolio.enums.BrowserType;
 import com.qaportfolio.enums.RunMode;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.LocalFileDetector;
 
-import java.net.URI;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Map;
 
 public final class DriverFactory {
@@ -19,79 +24,93 @@ public final class DriverFactory {
 
     public static WebDriver createDriver() {
         AppConfig config = AppConfig.getInstance();
-        BrowserType browser = BrowserType.from(config.browser());
+        BrowserType browserType = BrowserType.from(config.browser());
         RunMode runMode = RunMode.from(config.runMode());
 
         return switch (runMode) {
-            case LOCAL -> createLocalDriver(browser, config.headless());
-            case REMOTE -> createRemoteDriver(browser, config);
+            case LOCAL -> createLocalDriver(browserType, config);
+            case REMOTE -> createRemoteDriver(browserType, config);
         };
     }
 
-    private static WebDriver createLocalDriver(BrowserType browser, boolean headless) {
-        return switch (browser) {
+    private static WebDriver createLocalDriver(BrowserType browserType, AppConfig config) {
+        return switch (browserType) {
             case CHROME -> {
                 WebDriverManager.chromedriver().setup();
-                yield new org.openqa.selenium.chrome.ChromeDriver(createChromeOptions(headless));
+                yield new ChromeDriver(createChromeOptions(config, false));
             }
             case FIREFOX -> {
                 WebDriverManager.firefoxdriver().setup();
-                yield new org.openqa.selenium.firefox.FirefoxDriver(createFirefoxOptions(headless));
+                yield new FirefoxDriver(createFirefoxOptions(config, false));
             }
         };
     }
 
-    private static WebDriver createRemoteDriver(BrowserType browser, AppConfig config) {
+    private static WebDriver createRemoteDriver(BrowserType browserType, AppConfig config) {
+        boolean isSelenoid = "selenoid".equalsIgnoreCase(config.remoteProvider());
+
+        MutableCapabilities options = switch (browserType) {
+            case CHROME -> createChromeOptions(config, isSelenoid);
+            case FIREFOX -> createFirefoxOptions(config, isSelenoid);
+        };
+
         try {
-            return switch (browser) {
-                case CHROME -> new RemoteWebDriver(
-                        URI.create(config.remoteUrl()).toURL(),
-                        createChromeOptions(config.headless())
-                );
-                case FIREFOX -> new RemoteWebDriver(
-                        URI.create(config.remoteUrl()).toURL(),
-                        createFirefoxOptions(config.headless())
-                );
-            };
-        } catch (Exception exception) {
-            throw new IllegalStateException("Failed to create remote WebDriver.", exception);
+            RemoteWebDriver remoteDriver = new RemoteWebDriver(new URL(config.remoteUrl()), options);
+            remoteDriver.setFileDetector(new LocalFileDetector());
+            return remoteDriver;
+        } catch (MalformedURLException e) {
+            throw new IllegalStateException("Invalid remote URL: " + config.remoteUrl(), e);
         }
     }
 
-    private static ChromeOptions createChromeOptions(boolean headless) {
+    private static ChromeOptions createChromeOptions(AppConfig config, boolean isSelenoid) {
         ChromeOptions options = new ChromeOptions();
 
-        options.addArguments("--disable-notifications");
-        options.addArguments("--disable-popup-blocking");
-        options.addArguments("--remote-allow-origins=*");
+        options.setAcceptInsecureCerts(true);
 
-        if (headless) {
+        options.addArguments(
+                "--disable-notifications",
+                "--disable-popup-blocking",
+                "--remote-allow-origins=*",
+                "--ignore-certificate-errors",
+                "--allow-insecure-localhost",
+                "--no-sandbox",
+                "--disable-dev-shm-usage",
+                "--window-size=1920,1080"
+        );
+
+        if (config.headless()) {
             options.addArguments("--headless=new");
-            options.addArguments("--window-size=1920,1080");
         }
 
-        options.setCapability("selenoid:options", Map.of(
-                "enableVNC", true,
-                "enableVideo", true,
-                "screenResolution", "1920x1080x24"
-        ));
+        if (isSelenoid) {
+            addSelenoidOptions(options);
+        }
 
         return options;
     }
 
-    private static FirefoxOptions createFirefoxOptions(boolean headless) {
+    private static FirefoxOptions createFirefoxOptions(AppConfig config, boolean isSelenoid) {
         FirefoxOptions options = new FirefoxOptions();
 
-        if (headless) {
+        options.setAcceptInsecureCerts(true);
+
+        if (config.headless()) {
             options.addArguments("-headless");
         }
 
-        options.setCapability("selenoid:options", Map.of(
-                "enableVNC", true,
-                "enableVideo", true,
-                "screenResolution", "1920x1080x24"
-        ));
+        if (isSelenoid) {
+            addSelenoidOptions(options);
+        }
 
         return options;
+    }
+
+    private static void addSelenoidOptions(MutableCapabilities options) {
+        options.setCapability("selenoid:options", Map.of(
+                "enableVNC", true,
+                "enableVideo", false,
+                "screenResolution", "1920x1080x24"
+        ));
     }
 }

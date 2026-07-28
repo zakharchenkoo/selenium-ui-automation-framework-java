@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+  selenoid:
+    image: aerokube/selenoid:latest-release
+    container_name: selenoid
+    ports:
+      - "4444:4444"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./selenoid:/etc/selenoid:ro
+      - ./video:/opt/selenoid/video
+      - ./logs:/opt/selenoid/logs
+    environment:
+      - DOCKER_API_VERSION=1.40
+    command:
+      [
+        "-conf", "/etc/selenoid/browsers.json",
+        "-video-output-dir", "/opt/selenoid/video",
+        "-log-output-dir", "/opt/selenoid/logs",
+        "-limit", "2",
+        "-container-network", "docker_default"
+      ]
+
+  selenoid-ui:
+    image: aerokube/selenoid-ui:latest-release
+    container_name: selenoid-ui
+    depends_on:
+      - selenoid
+    ports:
+      - "8080:8080"
+    command: ["--selenoid-uri", "http://selenoid:4444"]
